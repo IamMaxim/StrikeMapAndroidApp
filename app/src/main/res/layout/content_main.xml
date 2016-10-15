@@ -13,9 +13,41 @@
     tools:context="ru.strikemap.strikemap.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <TextView
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/til1">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="IP address of server"
+            android:id="@+id/ip"/>
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/til1"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/til2">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Port of server"
+            android:id="@+id/port" />
+    </android.support.design.widget.TextInputLayout>
+
+    <Button
+        android:text="Connect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        android:id="@+id/tv" />
+        android:layout_below="@+id/til2"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/connect" />
 </RelativeLayout>
