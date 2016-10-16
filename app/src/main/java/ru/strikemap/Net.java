@@ -36,7 +36,19 @@ public class Net {
     }
 
     public static void sendClientConnected(DataOutputStream dos, int id, String name) throws IOException {
+        System.out.println("sending ADD_CLIENT");
         dos.writeByte(Net.ACTION_ADD_CLIENT);
+        dos.writeInt(id);
+        dos.writeUTF(name);
+    }
+
+    public static void sendNameToServer(DataOutputStream dos, String name) throws IOException {
+        dos.writeByte(Net.ACTION_SET_NAME);
+        dos.writeUTF(name);
+    }
+
+    public static void sendNameToClient(DataOutputStream dos, int id, String name) throws IOException {
+        dos.writeByte(Net.ACTION_SET_NAME);
         dos.writeInt(id);
         dos.writeUTF(name);
     }
@@ -44,5 +56,24 @@ public class Net {
     public static void sendRemoveClient(DataOutputStream dos, int id) throws IOException {
         dos.writeByte(Net.ACTION_REMOVE_CLIENT);
         dos.writeInt(id);
+    }
+
+    public static void sendStateToClient(DataOutputStream dos, int id, Player.State state) throws IOException {
+        dos.writeByte(Net.ACTION_SET_STATE);
+        dos.writeInt(id);
+        dos.writeInt(state.ordinal());
+    }
+
+    public static void sendCoordsToClient(DataOutputStream dos, int id, float x, float y) throws IOException {
+        dos.writeByte(Net.ACTION_SET_POS);
+        dos.writeInt(id);
+        dos.writeFloat(x);
+        dos.writeFloat(y);
+    }
+
+    public static void sendTeamToClient(DataOutputStream dos, int id, int team) throws IOException {
+        dos.writeByte(Net.ACTION_SET_TEAM);
+        dos.writeInt(id);
+        dos.writeInt(team);
     }
 }

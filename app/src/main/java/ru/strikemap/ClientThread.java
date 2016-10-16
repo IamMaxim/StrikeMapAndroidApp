@@ -2,6 +2,7 @@ package ru.strikemap;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.net.SocketException;
 
 /**
  * Created by maxim on 15.10.2016.
@@ -17,14 +18,23 @@ public class ClientThread extends Thread {
     public void run() {
         while (!isInterrupted()) {
             try {
+                try {
+                    Net.sendCoordToServer(client.dos, client.player.x, client.player.y);
+                } catch (NullPointerException e) {
+                }
                 byte action = client.dis.readByte();
+                System.out.println("Received action: " + action);
                 if (action == Net.ACTION_ADD_CLIENT) {
                     Player player = new Player(0, 0, 0);
                     player.id = client.dis.readInt();
                     player.name = client.dis.readUTF();
+                    //System.out.println("adding player " + player.name + " ");
                     client.players.put(player.id, player);
                 } else if (action == Net.ACTION_REMOVE_CLIENT) {
-                    client.players.remove(client.dis.readInt());
+                    int id = client.dis.readInt();
+                    Player player = client.players.get(id);
+                    //System.out.println("removing player " + player.name);
+                    client.players.remove(id);
                 } else if (action == Net.ACTION_SET_NAME) {
                     int id = client.dis.readInt();
                     String name = client.dis.readUTF();
@@ -38,13 +48,21 @@ public class ClientThread extends Thread {
                     int id = client.dis.readInt();
                     int team = client.dis.readInt();
                     client.players.get(id).team = team;
+                } else if (action == Net.ACTION_SET_STATE) {
+                    int id = client.dis.readInt();
+                    Player.State state = Player.State.values()[client.dis.readInt()];
+                    client.players.get(id).state = state;
                 }
-            } catch (EOFException e) {
-                System.out.println("Client disconnected");
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
+                try {
+                    System.out.println("closing socket");
+                    client.socket.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                break;
             }
-
         }
     }
 }

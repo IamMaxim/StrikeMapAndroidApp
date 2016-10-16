@@ -35,7 +35,7 @@ public class Player {
         //System.out.println("Updating player " + id + " with coords: [" + x + ", " + y + "] and team " + team);
     }
 
-    enum State {
+    public enum State {
         NORMAL,
         DEAD,
         COVER
