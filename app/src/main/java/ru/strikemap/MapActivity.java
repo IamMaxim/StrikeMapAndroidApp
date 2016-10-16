@@ -113,20 +113,29 @@ public class MapActivity extends Activity {
                                     }
                                 }
                                 for (final Integer id : markers.keySet()) {
-                                    final Marker marker = markers.get(id);
-                                    final Player player = client.players.get(id);
                                     handler.post(new Runnable() {
                                         @Override
                                         public void run() {
                                             try {
+                                                Marker marker = markers.get(id);
+                                                Player player = client.players.get(id);
                                                 if (lastStates.get(id) != player.state) {
                                                     lastStates.put(id, player.state);
                                                     if (player.state == Player.State.DEAD) {
-                                                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.krasniy_krestik), 64, 64, true)));
+                                                        marker.remove();
+                                                        marker = map.addMarker(new MarkerOptions().position(marker.getPosition()).title(marker.getTitle()).flat(true).anchor(0.5f, 0.5f)
+                                                                .icon(BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.dead), 64, 64, true))));
+                                                        markers.put(id, marker);
                                                     } else if (player.state == Player.State.COVER) {
-                                                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.shitok), 64, 64, true)));
+                                                        marker.remove();
+                                                        marker = map.addMarker(new MarkerOptions().position(marker.getPosition()).title(marker.getTitle()).flat(true).anchor(0.5f, 0.5f)
+                                                                .icon(BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.cover), 64, 64, true))));
+                                                        markers.put(id, marker);
                                                     } else {
-                                                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.siniy_krug), 64, 64, true)));
+                                                        marker.remove();
+                                                        marker = map.addMarker(new MarkerOptions().position(marker.getPosition()).title(marker.getTitle()).flat(true).anchor(0.5f, 0.5f)
+                                                                .icon(BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.normal), 64, 64, true))));
+                                                        markers.put(id, marker);
                                                     }
                                                 }
 
