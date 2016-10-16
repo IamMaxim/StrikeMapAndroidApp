@@ -29,7 +29,6 @@ public class MapActivity extends Activity {
     private int lashHash = 0;
     private HashMap<Integer, Marker> markers = new HashMap<>();
     Handler handler = new Handler();
-    private HashMap<Integer, Long> startTimes = new HashMap<>();
     final Interpolator interpolator = new LinearInterpolator();
 
     private OnMapReadyCallback onMapReadyCallback = new OnMapReadyCallback() {
@@ -68,34 +67,47 @@ public class MapActivity extends Activity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            int hash = client.players.hashCode();
-                            if (lashHash != lashHash) {
-                                //remove disconnected client from map
-                                for (Integer id : markers.keySet()) {
-                                    if (!client.players.containsKey(id))
+                            try {
+                                if (client == null) {
+                                    System.out.println("client is null");
+                                    client = MainActivity.client;
+                                }
+                                int hash = client.players.hashCode();
+                                if (lashHash != hash) {
+                                    //remove disconnected client from map
+                                    for (Integer id : markers.keySet()) {
+                                        if (!client.players.containsKey(id))
+                                            System.out.println("removing player " + id);
                                         markers.remove(id).remove();
-                                }
-                                //add new client to map
-                                for (Integer id : client.players.keySet()) {
-                                    if (!markers.containsKey(id)) {
-                                        Player p = client.players.get(id);
-                                        markers.put(id, map.addMarker(new MarkerOptions().position(new LatLng(p.x, p.y)).title(p.name)));
+                                    }
+                                    //add new client to map
+                                    for (Integer id : client.players.keySet()) {
+                                        if (!markers.containsKey(id)) {
+                                            Player p = client.players.get(id);
+                                            System.out.println("adding player " + id);
+                                            markers.put(id, map.addMarker(new MarkerOptions().position(new LatLng(p.x, p.y)).title(p.name)));
+                                        }
                                     }
                                 }
-                            }
-                            for (Marker marker : markers.values()) {
-                                handler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        long startTime = System.currentTimeMillis();
-                                        float t =
-                                    }
-                                })
+                                for (final Integer id : markers.keySet()) {
+                                    final Marker marker = markers.get(id);
+                                    final Player player = client.players.get(id);
+                                    handler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            float t = (float) (System.currentTimeMillis() - client.lastPosUpdates.get(id)) / DELAY;
+                                            marker.setPosition(new LatLng(
+                                                    player.prevX + (player.x - player.prevX) * t,
+                                                    player.prevY + (player.y - player.prevY) * t
+                                            ));
+                                        }
+                                    });
+                                }
+                            } catch (NullPointerException e) {
+                                e.printStackTrace();
                             }
                         }
                     });
-                } else {
-                    System.out.println("map is null");
                 }
                 try {
                     Thread.sleep(DELAY);

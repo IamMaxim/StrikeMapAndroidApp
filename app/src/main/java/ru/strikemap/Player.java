@@ -8,7 +8,7 @@ public class Player {
 
     public String name;
     public int id;
-    public float x, y;
+    public float x, y, prevX, prevY;
     public State state;
     public int team;
 

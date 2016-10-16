@@ -18,6 +18,7 @@ public class Client implements Serializable {
     public Player player;
 
     public volatile HashMap<Integer, Player> players = new HashMap<>();
+    public HashMap<Integer, Long> lastPosUpdates = new HashMap<>();
 
     public Client(final String ip, final int port) throws IOException {
         System.out.println("trying to connect to " + ip + ":" + port);
