@@ -5,24 +5,25 @@ package ru.strikemap.strikemap;
  */
 
 public class Input {
-    boolean left, right, up, down, cover, dead;
+    public int left, right, up, down;
+    public boolean cover, dead;
 
     /*
     7 null,
     6 null,
     5 dead
     4 cover
-    3 up
+    3 left
     2 right
     1 down
-    0 left
+    0 up
      */
 
     public Input(byte input) {
-        left = (input & 0b1) == 1;
-        right = (input >> 2 & 0b1) == 1;
-        up = (input >> 3 & 0b1) == 1;
-        down = (input >> 1 & 0b1) == 1;
+        left = (input >> 3 & 0b1);
+        right = (input >> 2 & 0b1);
+        up = (input & 0b1);
+        down = (input >> 1 & 0b1);
         cover = (input >> 4 & 0b1) == 1;
         dead = (input >> 5 & 0b1) == 1;
     }

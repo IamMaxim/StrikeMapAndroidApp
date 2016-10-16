@@ -36,6 +36,7 @@ import ru.iammaxim.Tasker.TaskController;
 import ru.strikemap.Client;
 import ru.strikemap.MapActivity;
 import ru.strikemap.Net;
+import ru.strikemap.Player;
 
 public class MainActivity extends AppCompatActivity {
     public final String ACTION_USB_PERMISSION = "ru.strikemap.USB_PERMISSION";
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     UsbDeviceConnection connection;
     public static Client client;
     public static Input lastInput = new Input((byte) 0b00000000);
+    private static Player.State lastState = Player.State.NORMAL;
     public TaskController taskController = new TaskController(1, 5);
     //GoogleApiClient mGoogleApiClient = null;
 
@@ -54,8 +56,47 @@ public class MainActivity extends AppCompatActivity {
     UsbSerialInterface.UsbReadCallback callback = new UsbSerialInterface.UsbReadCallback() {
         @Override
         public void onReceivedData(byte[] arg0) {
-            Input input = new Input(arg0[0]);
-            lastInput = input;
+            if (arg0.length > 0) {
+                lastInput = new Input(arg0[0]);
+                if (lastInput.dead && lastState != Player.State.DEAD) {
+                    lastState = Player.State.DEAD;
+                    taskController.addTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Net.sendStateToServer(client.dos, Player.State.DEAD);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+                else if (lastInput.cover && lastState != Player.State.COVER) {
+                    lastState = Player.State.COVER;
+                    taskController.addTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Net.sendStateToServer(client.dos, Player.State.COVER);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                } else if (lastState != Player.State.NORMAL) {
+                    lastState = Player.State.NORMAL;
+                    taskController.addTask(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Net.sendStateToServer(client.dos, Player.State.NORMAL);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+            }
         }
     };
 
@@ -120,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        start();
+                                        startLocationService();
                                         final String name_str = name.getEditableText().toString();
                                         if (!name_str.isEmpty()) {
                                             taskController.addTask(new Runnable() {
@@ -152,26 +193,7 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(broadcastReceiver, filter);
     }
 
-    public void start() {
-        HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
-        if (!usbDevices.isEmpty()) {
-            boolean keep = true;
-            for (Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
-                device = entry.getValue();
-                int deviceVID = device.getVendorId();
-                if (deviceVID == 0x2341) //Arduino Vendor ID
-                {
-                    PendingIntent pi = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-                    usbManager.requestPermission(device, pi);
-                    keep = false;
-                } else {
-                    connection = null;
-                    device = null;
-                }
-                if (!keep)
-                    break;
-            }
-        }
+    public void startLocationService() {
         LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         LocationListener locationListener = new LocationListener() {
             public void onLocationChanged(final Location location) {
@@ -179,7 +201,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            Net.sendCoordToServer(client.dos, (float) location.getLatitude(), (float) location.getLongitude());
+                            if (client != null)
+                                Net.sendCoordToServer(client.dos, (float) location.getLatitude(), (float) location.getLongitude());
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -209,6 +232,28 @@ public class MainActivity extends AppCompatActivity {
         }
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
 
+    }
+
+    public void start() {
+        HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
+        if (!usbDevices.isEmpty()) {
+            boolean keep = true;
+            for (Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
+                device = entry.getValue();
+                int deviceVID = device.getVendorId();
+                if (deviceVID == 0x2341 || deviceVID == 0x1a86) //Arduino Vendor ID
+                {
+                    PendingIntent pi = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+                    usbManager.requestPermission(device, pi);
+                    keep = false;
+                } else {
+                    connection = null;
+                    device = null;
+                }
+                if (!keep)
+                    break;
+            }
+        }
     }
 
 

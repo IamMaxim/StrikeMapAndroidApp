@@ -25,7 +25,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="IP address of server"
-            android:id="@+id/ip"/>
+            android:id="@+id/ip"
+            android:text="10.5.3.159" />
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
@@ -40,7 +41,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Port of server"
-            android:id="@+id/port" />
+            android:id="@+id/port"
+            android:text="52464" />
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout

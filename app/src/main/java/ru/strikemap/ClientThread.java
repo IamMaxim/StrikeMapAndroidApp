@@ -40,11 +40,17 @@ public class ClientThread extends Thread {
                     client.players.get(id).name = name;
                 } else if (action == Net.ACTION_SET_POS) {
                     int id = client.dis.readInt();
-                    client.player.prevX = client.player.x;
-                    client.player.prevY = client.player.y;
+                    try {
+                        client.players.get(id).prevX = client.players.get(id).x;
+                        client.players.get(id).prevY = client.players.get(id).y;
+                    } catch (NullPointerException e) {
+                        e.printStackTrace();
+                    }
                     float x = client.dis.readFloat();
                     float y = client.dis.readFloat();
                     client.players.get(id).setPos(x, y);
+                    client.prevPosUpdates.put(id, client.lastPosUpdates.get(id));
+                    System.out.println("prevPosUpdates: " + client.prevPosUpdates.get(id));
                     client.lastPosUpdates.put(id, System.currentTimeMillis());
                 } else if (action == Net.ACTION_SET_TEAM) {
                     int id = client.dis.readInt();
